@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exo2EgoPolicy: Geometry-Aware Policy Transfer from Exocentric Human Demonstrations</title>
+  <meta name="description" content="Exo2EgoPolicy learns egocentric robot manipulation policies from monocular exocentric human video via geometry-aware, viewpoint-aligned pose translation on the SE(3) manifold." />
+  <meta name="keywords" content="Exo2Ego, robot learning, manipulation, diffusion model, co-training, SE(3), egocentric, imitation learning" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Exo2EgoPolicy: Geometry-Aware Policy Transfer from Exocentric Human Demonstrations" />
+  <meta property="og:description" content="Translating third-person human video into first-person hand-object pose for scalable robot manipulation policy learning." />
+  <meta property="og:image" content="static/images/teaser.jpg" />
+  <meta property="og:type" content="website" />
+
+  <link rel="icon" type="image/png" href="static/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="static/css/style.css" />
+  <!-- MathJax for inline equations -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+</head>
+<body>
+
+  <!-- ===================== HERO ===================== -->
+  <header class="hero">
+    <div class="container">
+      <h1 class="title">Exo2EgoPolicy</h1>
+      <p class="subtitle">Geometry-Aware Policy Transfer from Exocentric Human Demonstrations</p>
+
+      <div class="authors">
+        <span><a href="#">Hritam Basak</a><sup>1,2</sup></span>
+        <span><a href="#">Hadi Tabatabaee</a><sup>1</sup></span>
+        <span><a href="#">Xin Yang</a><sup>1</sup></span>
+        <span><a href="#">Shreekant Gayaka</a><sup>1</sup></span>
+        <span><a href="#">Nan Qiao</a><sup>1</sup></span>
+        <span><a href="#">Yuyin Sun</a><sup>1</sup></span>
+        <span><a href="#">Cheng-Hao Kuo</a><sup>1</sup></span>
+        <span><a href="#">Zhaozheng Yin</a><sup>2</sup></span>
+        <span><a href="#">Min Sun</a><sup>1</sup></span>
+      </div>
+
+      <div class="affiliations">
+        <span><sup>1</sup>Amazon.com</span>
+        <span><sup>2</sup>Stony Brook University, USA</span>
+      </div>
+
+      <div class="buttons">
+        <a class="btn" href="#" aria-disabled="true">
+          <span class="icon">📄</span> Paper
+        </a>
+        <a class="btn" href="https://arxiv.org/" target="_blank" rel="noopener">
+          <span class="icon">📑</span> arXiv
+        </a>
+        <a class="btn" href="https://github.com/hritam-98/exo2egopolicy" target="_blank" rel="noopener">
+          <span class="icon">⌨</span> Code
+        </a>
+        <a class="btn" href="#bibtex">
+          <span class="icon">❝</span> BibTeX
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== TEASER ===================== -->
+  <section class="section teaser-section">
+    <div class="container">
+      <figure>
+        <img src="static/images/teaser.jpg" alt="Exo2EgoPolicy teaser: translating exocentric human video to egocentric hand-object pose for human-robot co-training." />
+        <figcaption>
+          <strong>Figure 1.</strong> We propose <b>Exo2EgoPolicy</b>, which learns robot policies by translating
+          exocentric (third-person) human video into egocentric (first-person) hand-object pose,
+          enabling egocentric human–robot co-training for diverse manipulation tasks.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===================== ABSTRACT ===================== -->
+  <section class="section">
+    <div class="container narrow">
+      <h2>Abstract</h2>
+      <p>
+        Learning robot manipulation policies from large-scale human videos is challenging due to the
+        viewpoint mismatch between third-person observations and egocentric robot control. To this end,
+        we introduce <b>Exo2EgoPolicy</b>, a geometry-aware framework that learns egocentric manipulation
+        policies from monocular exocentric video via viewpoint-aligned pose translation. Unlike prior
+        Exo→Ego approaches that rely on diffusion-based pixel synthesis and often produce temporally
+        inconsistent predictions, our method operates directly on a structured <b>pose manifold</b> and
+        explicitly models the geometric ambiguity inherent in monocular observation.
+      </p>
+      <p>
+        We formulate exocentric-to-egocentric translation as a viewpoint-conditioned latent variable
+        model on the <b>$SE(3)$ manifold</b> that disentangles pose from camera transformation and captures
+        the ambiguity induced by unknown camera extrinsics. Under bounded viewpoint motion, the
+        formulation yields pose trajectories that are identifiable up to a global rigid transformation and
+        supports stable sequential inference through temporal regularization. Beyond representation
+        alignment, we show that for quasi-static manipulation tasks whose rewards depend primarily on
+        relative hand–object geometry, pose captures the key task-relevant information required for policy
+        learning. This enables policy co-training on pose-translated human demonstrations alongside
+        limited robot teleoperation data within a unified human–robot state space.
+      </p>
+      <p>
+        Empirically, Exo2EgoPolicy improves temporal consistency, cross-view alignment, and
+        out-of-distribution policy transfer compared to pixel-based translation and other cross-view
+        co-training baselines, achieving <b>20–30% higher task success</b> on manipulation benchmarks.
+        These results suggest that geometry-aligned pose representations provide a scalable foundation for
+        cross-view policy learning from human video.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== KEY IDEA / TLDR ===================== -->
+  <section class="section alt">
+    <div class="container narrow">
+      <h2>TL;DR</h2>
+      <p class="tldr">
+        Instead of hallucinating egocentric <em>pixels</em>, Exo2EgoPolicy translates third-person human
+        video into first-person <em>hand–object pose</em> on the $SE(3)$ manifold. Geometry-aligned poses
+        are temporally stable and provide a sufficient statistic for manipulation, so they can be
+        co-trained directly with limited robot teleoperation data.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== METHOD ===================== -->
+  <section class="section">
+    <div class="container">
+      <h2>Method Overview</h2>
+      <figure>
+        <img src="static/images/framework.jpg" alt="Overview of the Exo2EgoPolicy framework: geometry-aware pose translation, temporal regularization, pose sufficiency, and unified co-training." />
+        <figcaption>
+          <strong>Figure 2.</strong> Overview of the Exo2EgoPolicy framework. Given an exocentric RGB
+          observation and its pose, geometric encoders produce a dense latent that conditions the
+          <b>Exo2Ego Pose Translation Diffusion Model</b> on $SE(3)$. A <b>temporal regularization</b> module
+          enforces autoregressive, temporally consistent pose generation. We establish that the generated
+          pose is <b>sufficient</b> for cross-domain policy learning, and finally co-train the policy
+          $\pi_\theta$ on translated human demonstrations together with limited teleoperation data in a
+          unified state-action space.
+        </figcaption>
+      </figure>
+
+      <div class="cards">
+        <div class="card">
+          <h3>1 · Geometry-Aware Pose Translation</h3>
+          <p>
+            Exo→Ego translation is cast as a viewpoint-conditioned latent diffusion model over the
+            $SE(3)$ manifold. Predicting the hand pose <em>relative to the object</em>
+            $(p^{\text{obj}}_t)^{-1}\!\cdot p^{\text{hand}}_t$ marginalizes out the unknown camera, yielding
+            trajectories identifiable up to a global rigid transformation.
+          </p>
+        </div>
+        <div class="card">
+          <h3>2 · Temporal Stability</h3>
+          <p>
+            A forward kinematic motion prior conditions generation on the previous state, with a Lie-group
+            temporal consistency loss. With an $L$-Lipschitz transition ($L<1$), the cumulative
+            trajectory error is uniformly bounded by $\epsilon/(1-L)$ — suppressing jitter.
+          </p>
+        </div>
+        <div class="card">
+          <h3>3 · Pose Sufficiency</h3>
+          <p>
+            Modeling manipulation as an MDP, we show that for quasi-static tasks whose reward depends on
+            relative hand–object geometry, pose is a <em>sufficient statistic</em> — a policy on pose
+            attains the same optimal value as one on raw RGB, while being invariant to visual nuisances.
+          </p>
+        </div>
+        <div class="card">
+          <h3>4 · Unified Co-Training</h3>
+          <p>
+            The human hand is treated as a distinct embodiment in the same kinematic space as the robot
+            end-effector. An Action Transformer policy is trained via joint behavioral cloning over robot
+            teleoperation and pose-translated human data.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== POSE VIZ ===================== -->
+  <section class="section alt">
+    <div class="container">
+      <h2>Exo→Ego Pose Translation</h2>
+      <figure>
+        <img src="static/images/pose_viz.jpg" alt="Visualization of Exo2Ego hand-object pose generation over time." />
+        <figcaption>
+          <strong>Figure 3.</strong> Visualization of Exo→Ego hand–object pose generation. From an
+          uncalibrated exocentric video, our model recovers temporally consistent egocentric hand–object
+          pose trajectories.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===================== ROLLOUTS ===================== -->
+  <section class="section">
+    <div class="container">
+      <h2>Policy Rollouts</h2>
+      <figure>
+        <img src="static/images/rollouts.jpg" alt="Visualization of policy rollouts after co-training on Close-Drawer, Stack-Can, and Stack-Can-Into-Drawer tasks." />
+        <figcaption>
+          <strong>Figure 4.</strong> Policy rollouts after co-training, on the Ego Humanoid Manipulation
+          Benchmark (NVIDIA Isaac Lab, Unitree H1 humanoid with Inspire dexterous hands).
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===================== RESULTS ===================== -->
+  <section class="section alt">
+    <div class="container narrow">
+      <h2>Results</h2>
+
+      <h3>Exo→Ego Hand Pose Translation (H2O)</h3>
+      <p>Across four generalization splits, Exo2EgoPolicy outperforms pixel-space baselines on every metric,
+         reducing PA-MPJPE by ~27% over the strongest baseline (EgoX) and improving F@5mm by over 30% on the
+         most challenging <em>Unseen Actions</em> split.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Method</th><th>PA-MPJPE ↓</th><th>AUC<sub>J</sub> ↑</th><th>PA-MPVPE ↓</th><th>F@5mm ↑</th><th>F@15mm ↑</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Pix2PixHD</td><td>42.6</td><td>0.312</td><td>48.4</td><td>0.142</td><td>0.412</td></tr>
+            <tr><td>Exo2Ego-V</td><td>24.1</td><td>0.518</td><td>26.3</td><td>0.312</td><td>0.645</td></tr>
+            <tr><td>EgoWorld</td><td>19.4</td><td>0.612</td><td>22.5</td><td>0.421</td><td>0.762</td></tr>
+            <tr><td>4Diff</td><td>18.2</td><td>0.635</td><td>20.1</td><td>0.448</td><td>0.782</td></tr>
+            <tr><td>EgoX</td><td>15.7</td><td>0.684</td><td>17.5</td><td>0.521</td><td>0.844</td></tr>
+            <tr class="best"><td>Ours</td><td>11.4</td><td>0.772</td><td>12.8</td><td>0.685</td><td>0.912</td></tr>
+          </tbody>
+        </table>
+        <p class="caption">Unseen Objects split on H2O. Best in bold.</p>
+      </div>
+
+      <h3>Policy Co-Training — Mean Success Rate (%)</h3>
+      <p>On the Ego Humanoid Manipulation Benchmark, our pose-space translation surpasses all baselines,
+         including the egocentric-pretraining method EgoVLA, under both seen and unseen visual settings.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Method</th><th>Short — Seen</th><th>Short — Unseen</th><th>Long — Seen</th><th>Long — Unseen</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ACT</td><td>24.9</td><td>24.9</td><td>2.2</td><td>0.6</td></tr>
+            <tr><td>EgoVLA-NoPretrain</td><td>64.6</td><td>51.3</td><td>26.7</td><td>11.2</td></tr>
+            <tr><td>Exo-only co-training</td><td>65.7</td><td>52.7</td><td>27.6</td><td>12.1</td></tr>
+            <tr><td>EgoWorld</td><td>70.5</td><td>58.5</td><td>34.1</td><td>16.1</td></tr>
+            <tr><td>4Diff</td><td>72.9</td><td>62.5</td><td>37.4</td><td>19.7</td></tr>
+            <tr><td>EgoX</td><td>75.5</td><td>66.6</td><td>41.5</td><td>23.9</td></tr>
+            <tr><td>EgoVLA</td><td>77.8</td><td>69.1</td><td>45.9</td><td>28.8</td></tr>
+            <tr class="best"><td>Ours</td><td>81.9</td><td>73.7</td><td>53.3</td><td>36.1</td></tr>
+          </tbody>
+        </table>
+        <p class="caption">Mean Success Rate across short- and long-horizon tasks. Best in bold.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== BIBTEX ===================== -->
+  <section class="section" id="bibtex">
+    <div class="container narrow">
+      <h2>BibTeX</h2>
+      <pre><code>@article{basak2025exo2egopolicy,
+  title   = {Exo2EgoPolicy: Geometry-Aware Policy Transfer from
+             Exocentric Human Demonstrations},
+  author  = {Basak, Hritam and Tabatabaee, Hadi and Yang, Xin and
+             Gayaka, Shreekant and Qiao, Nan and Sun, Yuyin and
+             Kuo, Cheng-Hao and Yin, Zhaozheng and Sun, Min},
+  year    = {2025}
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer">
+    <div class="container narrow">
+      <p>
+        This website is licensed under a
+        <a href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+        Template inspired by academic project pages.
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
