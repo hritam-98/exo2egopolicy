@@ -36,10 +36,6 @@ python3 -m http.server 8000
 # open http://localhost:8000
 ```
 
-### Enabling GitHub Pages
-
-In the repository settings → **Pages**, set the source to the `main` branch, root
-(`/`). The site will be published at `https://hritam-98.github.io/exo2egopolicy/`.
 
 ## Citation
 
