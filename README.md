@@ -16,25 +16,7 @@ poses that are co-trained with limited robot teleoperation data.
 
 This repository hosts the [project website](https://hritam-98.github.io/exo2egopolicy/).
 
-## Project page
 
-The site is a static page served from the repository root via GitHub Pages.
-
-```
-.
-├── index.html              # project page
-├── static/
-│   ├── css/style.css       # styles
-│   └── images/             # figures
-└── .nojekyll               # serve static/ assets verbatim
-```
-
-### Local preview
-
-```bash
-python3 -m http.server 8000
-# open http://localhost:8000
-```
 
 
 ## Citation
